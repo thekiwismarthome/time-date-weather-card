@@ -1,0 +1,6 @@
+{
+  "name": "Time Date Weather Card",
+  "render_readme": true,
+  "filename": "time-date-weather-card.js",
+  "homeassistant": "2023.4.0"
+}
