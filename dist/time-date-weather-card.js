@@ -1061,7 +1061,7 @@ class TimeDateWeatherCardEditor extends HTMLElement {
       { key: 'entity',           label: 'Weather Entity',              type: 'select-weather' },
       { section: 'Layout' },
       { key: 'reverse_layout',   label: 'Reverse date / weather positions', type: 'toggle', hint: 'Puts the date on the left and clock+weather on the right' },
-      { key: 'weather_bottom',   label: 'Weather row position (% from bottom)', type: 'number', placeholder: '25', min: 0, max: 100, step: 1 },
+      { key: 'weather_bottom',   label: 'Weather row position (% from bottom)', type: 'range',  placeholder: '25', min: 0, max: 100, step: 1 },
       { section: 'Text & Size' },
       { key: 'time_size',        label: 'Time font size',              type: 'text',   placeholder: 'clamp(1.4rem, 7cqw, 3.6rem)' },
       { key: 'date_size',        label: 'Date font size',              type: 'text',   placeholder: 'clamp(0.65rem, 1.8cqw, 1.1rem)' },
@@ -1125,6 +1125,12 @@ class TimeDateWeatherCardEditor extends HTMLElement {
         input:checked + .slider { background: var(--primary-color, #38bdf8); }
         input:checked + .slider:before { transform: translateX(20px); }
         .hint { font-size: 0.75em; color: var(--disabled-text-color, #64748b); }
+        .range-label-row { display: flex; justify-content: space-between; align-items: baseline; }
+        .range-val { font-size: 0.85em; font-weight: 700; color: var(--primary-color, #38bdf8); min-width: 2.5em; text-align: right; }
+        input[type="range"] {
+          width: 100%; padding: 0; border: none; background: transparent;
+          accent-color: var(--primary-color, #38bdf8); cursor: pointer; height: 20px;
+        }
       </style>
       <div class="editor">
         ${this._fields().map(f => this._fieldHtml(f)).join('')}
@@ -1149,6 +1155,16 @@ class TimeDateWeatherCardEditor extends HTMLElement {
         const text   = this.shadowRoot.getElementById(`field-${f.key}`);
         if (picker) picker.addEventListener('input',  e => { if (text) text.value = e.target.value; this._valueChanged(f.key, e.target.value); });
         if (text)   text.addEventListener('change', e => this._valueChanged(f.key, e.target.value));
+        return;
+      }
+      if (f.type === 'range') {
+        const el    = this.shadowRoot.getElementById(`field-${f.key}`);
+        const valEl = this.shadowRoot.getElementById(`field-${f.key}-val`);
+        if (el) el.addEventListener('input', e => {
+          const v = parseFloat(e.target.value);
+          if (valEl) valEl.textContent = v + '%';
+          this._valueChanged(f.key, v);
+        });
         return;
       }
       const el = this.shadowRoot.getElementById(`field-${f.key}`);
@@ -1224,6 +1240,23 @@ class TimeDateWeatherCardEditor extends HTMLElement {
             min="${f.min}" max="${f.max}" step="${f.step}"
             placeholder="${f.placeholder}">
           <span class="hint">Default: ${f.placeholder}</span>
+        </div>`;
+    }
+
+    if (f.type === 'range') {
+      const rangeVal = val !== '' ? val : (f.placeholder !== undefined ? f.placeholder : 50);
+      return `
+        <div class="field">
+          <div class="range-label-row">
+            <label>${f.label}</label>
+            <span class="range-val" id="field-${f.key}-val">${rangeVal}%</span>
+          </div>
+          <input type="range" id="field-${f.key}"
+            value="${rangeVal}"
+            min="${f.min !== undefined ? f.min : 0}"
+            max="${f.max !== undefined ? f.max : 100}"
+            step="${f.step !== undefined ? f.step : 1}">
+          ${f.hint ? `<span class="hint">${f.hint}</span>` : ''}
         </div>`;
     }
 
