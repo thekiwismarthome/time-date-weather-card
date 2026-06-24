@@ -877,6 +877,8 @@ class TimeDateWeatherCard extends HTMLElement {
 
   render() {
     const cfg            = this._config;
+    const reverseLayout  = cfg.reverse_layout   || false;
+    const weatherBottom  = cfg.weather_bottom   !== undefined ? cfg.weather_bottom : 25;
     const dateColor      = cfg.date_color       || '#f97316';
     const timeSize       = cfg.time_size        || 'clamp(1.4rem, 7cqw, 3.6rem)';
     const dateSize       = cfg.date_size        || 'clamp(0.65rem, 1.8cqw, 1.1rem)';
@@ -907,6 +909,7 @@ class TimeDateWeatherCard extends HTMLElement {
           overflow: hidden;
           position: relative;
           container-type: inline-size;
+          min-height: 140px;
         }
         #wx-anim-canvas {
           position: absolute;
@@ -930,11 +933,13 @@ class TimeDateWeatherCard extends HTMLElement {
         .layout {
           display: flex;
           align-items: stretch;
+          flex-direction: ${reverseLayout ? 'row-reverse' : 'row'};
         }
         .left {
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
+          justify-content: flex-start;
+          position: relative;
           flex: 0 0 75%;
           min-width: 0;
         }
@@ -951,8 +956,10 @@ class TimeDateWeatherCard extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          width: 100%;
-          margin-top: 10px;
+          position: absolute;
+          bottom: ${weatherBottom}%;
+          left: 0;
+          right: 0;
           box-sizing: border-box;
         }
         .icon-wrap {
@@ -982,8 +989,8 @@ class TimeDateWeatherCard extends HTMLElement {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          align-items: flex-end;
-          text-align: right;
+          align-items: ${reverseLayout ? 'flex-start' : 'flex-end'};
+          text-align: ${reverseLayout ? 'left' : 'right'};
           font-size: ${dateSize};
           font-weight: 500;
           letter-spacing: ${letterSpacing}em;
@@ -1052,6 +1059,9 @@ class TimeDateWeatherCardEditor extends HTMLElement {
   _fields() {
     return [
       { key: 'entity',           label: 'Weather Entity',              type: 'select-weather' },
+      { section: 'Layout' },
+      { key: 'reverse_layout',   label: 'Reverse date / weather positions', type: 'toggle', hint: 'Puts the date on the left and clock+weather on the right' },
+      { key: 'weather_bottom',   label: 'Weather row position (% from bottom)', type: 'number', placeholder: '25', min: 0, max: 100, step: 1 },
       { section: 'Text & Size' },
       { key: 'time_size',        label: 'Time font size',              type: 'text',   placeholder: 'clamp(1.4rem, 7cqw, 3.6rem)' },
       { key: 'date_size',        label: 'Date font size',              type: 'text',   placeholder: 'clamp(0.65rem, 1.8cqw, 1.1rem)' },
